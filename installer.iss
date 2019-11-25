@@ -25,13 +25,15 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
 
 [Files]
+Source: "{code:GetDataDir|Textures}\TheColdOne.patchwad"; DestDir: "{code:GetDataDir|Textures}"; DestName: "TheColdOne.patchwad.bak"; Flags: external skipifsourcedoesntexist uninsneveruninstall
+Source: "{code:GetDataDir|Music}\hlm2_music_desktop.wad"; DestDir: "{code:GetDataDir|Music}"; DestName: "hlm2_music_desktop.wad.bak"; Flags: external skipifsourcedoesntexist uninsneveruninstall
 Source: "./files/TheColdOne.patchwad"; DestDir: "{code:GetDataDir|Textures}"; Flags: ignoreversion
 Source: "./files/hlm2_music_desktop.wad"; DestDir: "{code:GetDataDir|Music}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Code]
 const
-  gameid = 274170;
+  gameid = '274170';
 var
   DataDirPage: TInputDirWizardPage;
 
@@ -104,7 +106,7 @@ begin
     paths:= ReadVDF(vdfPath);
     for i:=0 to GetArrayLength(paths) - 1 do
     begin
-      acfPath := paths[i] + '\steamapps\appmanifest_268910.acf';
+      acfPath := paths[i] + '\steamapps\appmanifest_' + gameid + '.acf';
       if FileExists(acfPath) then
       begin
         result := paths[i] + '\steamapps\common\' + ReadACF(acfPath);
@@ -126,6 +128,27 @@ begin
   DataDirPage.Values[Index] := ExpandConstant('{userdocs}') + '\My Games\HotlineMiami2\mods';
   Index := DataDirPage.Add('Music Folder');
   DataDirPage.Values[Index] :=  GetGamePath();
+end;
+
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+var
+  OldFile: string;
+begin
+  case CurUninstallStep of    
+    usPostUninstall:
+      begin
+        OldFile := ExpandConstant('{code:GetDataDir|Textures}\TheColdOne.patchwad.bak');
+        if FileExists(OldFile) then
+        begin
+          RenameFile(OldFile, ExpandConstant('{code:GetDataDir|Textures}\TheColdOne.patchwad'));
+        end;
+        OldFile := ExpandConstant('{code:GetDataDir|Music}\hlm2_music_desktop.wad.bak');
+        if FileExists(OldFile) then
+        begin
+          RenameFile(OldFile, ExpandConstant('{code:GetDataDir|Music}\hlm2_music_desktop.wad'));
+        end;
+      end;
+  end;
 end;
 
 function GetDataDir(Param: String): String;
